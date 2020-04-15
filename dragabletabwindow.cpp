@@ -30,6 +30,9 @@ void DragableTabWindow::dragMoveEvent(QDragMoveEvent *event)
     return QTabWidget::dragMoveEvent(event);
 }
 
+/**
+ * 拖拽到另一种窗口，合并标签
+ */
 void DragableTabWindow::dropEvent(QDropEvent *event)
 {
     qDebug() << "Window::dropEvent";
@@ -38,7 +41,7 @@ void DragableTabWindow::dropEvent(QDropEvent *event)
     QWidget* widget = reinterpret_cast<QWidget*>(mime->data(DRAGABLE_TAB_WIDGET_MIME_KEY).toInt());
     QString label = mime->data(DRAGABLE_TAB_LABEL_MIME_KEY);
     window->removeTab(window->currentIndex());
-    if (!window->_is_main && window->count() == 0)
+    if (!window->_is_main && window->count() == 0) // 标签拖完了
         window->deleteLater();
     this->addTab(widget, label);
     _drag_merged = true;
@@ -84,6 +87,9 @@ void DragableTabWindow::slotStartDrag(int index)
     drag->exec();
 }
 
+/**
+ * 自己的标签拖出到新窗口
+ */
 void DragableTabWindow::slotDragToNewWindow()
 {
     qDebug() << "slotDragToNewWindow";
@@ -95,4 +101,6 @@ void DragableTabWindow::slotDragToNewWindow()
     removeTab(dragging_index);
     window->addTab(dragging_widget, label);
     emit signalTabWindowCreated(window);
+    if (!_is_main && count() == 0) // 标签拖完了
+        deleteLater();
 }
