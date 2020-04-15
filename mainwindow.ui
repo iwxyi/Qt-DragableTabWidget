@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="DragableTabWindow" name="tabWidget">
+     <widget class="DragableTabMain" name="tabWidget">
       <property name="currentIndex">
        <number>1</number>
       </property>
@@ -48,9 +48,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DragableTabWindow</class>
+   <class>DragableTabMain</class>
    <extends>QTabWidget</extends>
-   <header>dragabletabwindow.h</header>
+   <header>dragabletabmain.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

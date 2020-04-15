@@ -17,12 +17,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     dragabletabbar.cpp \
+    dragabletabmain.cpp \
     dragabletabwindow.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     dragabletabbar.h \
+    dragabletabmain.h \
     dragabletabwindow.h \
     mainwindow.h
 

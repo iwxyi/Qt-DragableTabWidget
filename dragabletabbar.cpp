@@ -2,7 +2,8 @@
 
 DragableTabBar::DragableTabBar(QWidget *parent) : QTabBar(parent), dragging(false)
 {
-
+    setMovable(true);
+    setMouseTracking(true);
 }
 
 void DragableTabBar::mousePressEvent(QMouseEvent *e)
@@ -13,7 +14,6 @@ void DragableTabBar::mousePressEvent(QMouseEvent *e)
     {
         dragging = true;
         press_pos = e->pos();
-        this->setFocus();
     }
 }
 
@@ -21,17 +21,16 @@ void DragableTabBar::mouseMoveEvent(QMouseEvent *e)
 {
     QTabBar::mouseMoveEvent(e);
 
-    if (dragging)
+    // 高度超过
+    if (dragging && (e->buttons() & Qt::LeftButton) && qAbs(e->pos().y()-press_pos.y()) > this->height())
     {
         int index = this->currentIndex();
         if (index == -1)
             return ;
 
-        QPoint point = e->pos();
         // 拖拽到外面来了
-        if (!tabRect(index).contains(point))
+        if (!tabRect(index).contains(e->pos()))
         {
-            dragging = false;
             emit signalStartDrag(index);
         }
     }
@@ -39,11 +38,12 @@ void DragableTabBar::mouseMoveEvent(QMouseEvent *e)
 
 void DragableTabBar::mouseReleaseEvent(QMouseEvent *e)
 {
-    if (dragging && e->button() == Qt::LeftButton)
+    qDebug() << "mouse release";
+    if (dragging && e->button() == Qt::LeftButton && !contentsRect().contains(e->pos()))
     {
         dragging = false;
+        emit signalEndDrag();
     }
-
     return QTabBar::mouseReleaseEvent(e);
 }
 

@@ -6,6 +6,13 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    ui->tabWidget->addTab(new QWidget(this), "qwert");
+    ui->tabWidget->addTab(new QWidget(this), "qwert");
+    ui->tabWidget->addTab(new QWidget(this), "qwert");
+    ui->tabWidget->addTab(new QWidget(this), "qwert");
+    ui->tabWidget->addTab(new QWidget(this), "qwert");
+    ui->tabWidget->addTab(new QWidget(this), "qwert");
 }
 
 MainWindow::~MainWindow()

@@ -1,9 +1,11 @@
 #ifndef DRAGABLETABBAR_H
 #define DRAGABLETABBAR_H
 
+#include <QApplication>
 #include <QObject>
 #include <QTabBar>
 #include <QMouseEvent>
+#include <QDebug>
 
 class DragableTabBar : public QTabBar
 {
