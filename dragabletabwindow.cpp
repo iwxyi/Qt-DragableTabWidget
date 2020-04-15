@@ -32,6 +32,7 @@ void DragableTabWindow::slotStartDrag(int index)
     qDebug() << "start drag";
     dragging_index = index;
     dragging_widget = this->widget(index);
+    dragging_point_delta = QCursor::pos() - dragging_widget->mapToGlobal(dragging_widget->pos());
 
     QPixmap pixmap(this->size());
     pixmap.fill(Qt::transparent);
@@ -40,11 +41,13 @@ void DragableTabWindow::slotStartDrag(int index)
     QMimeData* mime = new QMimeData;
     mime->setData(DRAGABLE_TAB_WINDOW_MIME_KEY, QString::number(reinterpret_cast<int>(dragging_widget)).toUtf8());
     QDrag* drag = new QDrag(this);
-    connect(drag, &QDrag::actionChanged, this, [=](Qt::DropAction action){
-        qDebug() << "actionChanged" << action;
-    });
     drag->setMimeData(mime);
     drag->setPixmap(pixmap);
+    drag->setHotSpot(dragging_point_delta);
+    connect(drag, &QDrag::destroyed, this, [=](QObject*){
+        // 拖拽结束
+        slotEndDrag();
+    });
     drag->exec();
 }
 
@@ -53,11 +56,10 @@ void DragableTabWindow::slotEndDrag()
     qDebug() << "slot end drag";
     DragableTabWindow* window = new DragableTabWindow(nullptr/*_is_main ? this : this->parentWidget()*/);
     window->resize(this->size());
+    window->move(QCursor::pos()-dragging_point_delta-QPoint(0,tab_bar->height()));
     window->show();
     QString label = tab_bar->tabText(dragging_index);
     removeTab(dragging_index);
     window->addTab(dragging_widget, label);
-    window->addTab(new QWidget(this), "aaaa");
-    window->addTab(new QWidget(this), "bbbb");
     emit signalTabWindowCreated(window);
 }

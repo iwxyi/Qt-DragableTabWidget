@@ -34,6 +34,7 @@ protected:
     DragableTabBar* tab_bar;
     int dragging_index;
     QWidget* dragging_widget;
+    QPoint dragging_point_delta; // 拖拽的 鼠标-子窗口左上角
 
     bool _is_main; // 是不是主窗口
 };

@@ -42,7 +42,7 @@ void DragableTabBar::mouseReleaseEvent(QMouseEvent *e)
     if (dragging && e->button() == Qt::LeftButton && !contentsRect().contains(e->pos()))
     {
         dragging = false;
-        emit signalEndDrag();
+        // emit signalEndDrag();
     }
     return QTabBar::mouseReleaseEvent(e);
 }
