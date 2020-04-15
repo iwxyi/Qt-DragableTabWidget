@@ -10,6 +10,8 @@
 #include "dragabletabbar.h"
 
 #define DRAGABLE_TAB_WINDOW_MIME_KEY "DRAGABLE_TAB_WINDOW_MIME_KEY"
+#define DRAGABLE_TAB_WIDGET_MIME_KEY "DRAGABLE_TAB_WIGET_MIME_KEY"
+#define DRAGABLE_TAB_LABEL_MIME_KEY "DRAGABLE_TAB_LABEL_MIME_KEY"
 
 class DragableTabWindow : public QTabWidget
 {
@@ -24,11 +26,10 @@ protected:
 
 public slots:
     void slotStartDrag(int index);
-    void slotEndDrag();
+    void slotDragToNewWindow();
 
 signals:
     void signalTabWindowCreated(DragableTabWindow* window);
-
 
 protected:
     DragableTabBar* tab_bar;
@@ -37,6 +38,7 @@ protected:
     QPoint dragging_point_delta; // 拖拽的 鼠标-子窗口左上角
 
     bool _is_main; // 是不是主窗口
+    static bool _drag_merged;
 };
 
 #endif // DRAGABLETABWINDOW_H
