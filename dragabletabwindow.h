@@ -27,6 +27,7 @@ protected:
 public slots:
     void slotStartDrag(int index);
     void slotDragToNewWindow();
+    bool slotMergeLabel(QDropEvent* event);
 
 signals:
     void signalTabWindowCreated(DragableTabWindow* window);

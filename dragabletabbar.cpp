@@ -22,7 +22,7 @@ void DragableTabBar::mouseMoveEvent(QMouseEvent *e)
     QTabBar::mouseMoveEvent(e);
 
     // 高度超过
-    if (dragging && (e->buttons() & Qt::LeftButton) && qAbs(e->pos().y()-press_pos.y()) > this->height())
+    if (dragging && (e->buttons() & Qt::LeftButton) && !contentsRect().contains(e->pos()))
     {
         int index = this->currentIndex();
         if (index == -1)
