@@ -48,7 +48,6 @@ void DragableTabWindow::dragMoveEvent(QDragMoveEvent *event)
 
 void DragableTabWindow::dropEvent(QDropEvent *event)
 {
-    qDebug() << "Window::dropEvent";
     if (slotMergeLabel(event))
         event->accept();
 
@@ -60,7 +59,6 @@ void DragableTabWindow::dropEvent(QDropEvent *event)
  */
 void DragableTabWindow::slotStartDrag(int index)
 {
-    qDebug() << "start drag";
     dragging_index = index;
     dragging_widget = this->widget(index);
     dragging_point_delta = QCursor::pos() - dragging_widget->mapToGlobal(dragging_widget->pos());
@@ -81,7 +79,6 @@ void DragableTabWindow::slotStartDrag(int index)
     connect(drag, &QDrag::destroyed, this, [=](QObject*){
         // 顺序：先触发 dropEvent，在 drag::destroyed
 
-        qDebug() << "QDrag::destroyed";
         // 判断有没有被合并到窗口
         if (_drag_merged)
         {
@@ -99,7 +96,6 @@ void DragableTabWindow::slotStartDrag(int index)
  */
 void DragableTabWindow::slotDragToNewWindow()
 {
-    qDebug() << "slotDragToNewWindow";
     if (count() == 1) // 只有一个标签，直接移动窗口
     {
         // 会导致没有 update，第一次按下无法操作，已取消

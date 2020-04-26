@@ -12,6 +12,7 @@ void DragableTabMain::slotTabWindowCreated(DragableTabWindow *window)
     tab_windows.append(window);
 
     connect(window, SIGNAL(signalTabWindowCreated(DragableTabWindow*)), this, SLOT(slotTabWindowCreated(DragableTabWindow*)));
+
     connect(window, &DragableTabWindow::destroyed, this, [=](QObject*) {
         tab_windows.removeOne(window);
     });
