@@ -20,7 +20,7 @@ public:
     DragableTabArea(QWidget* parent = nullptr);
 
     DragableTabGroup* createTabArea(QWidget* widget = nullptr, QString label = ""); // 创建层叠窗口
-    DragableTabGroup *createTabGroup(DragableTabGroup* base, QBoxLayout::Direction direction = QBoxLayout::LeftToRight); // 基于某一标签组，分割出来
+    DragableTabGroup *splitTabGroup(DragableTabGroup* base, QBoxLayout::Direction direction = QBoxLayout::LeftToRight); // 基于某一标签组，分割出来
     DragableTabGroup* createTabWindow(QWidget* widget = nullptr, QString label = "");
 
     int count();

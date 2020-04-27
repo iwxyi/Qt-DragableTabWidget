@@ -8,12 +8,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     ui->scrollArea->addTab(new QTextEdit("文本1", this), "Tab1");
-    ui->scrollArea->addTab(new QTextEdit("文本2", this), "qwert");
-    ui->scrollArea->addTab(new QTextEdit("文本3", this), "qwert");
-    ui->scrollArea->addTab(new QTextEdit("文本4", this), "qwert");
-    ui->scrollArea->addTab(new QTextEdit("文本5", this), "qwert");
-    ui->scrollArea->addTab(new QTextEdit("文本6", this), "qwert");
-    ui->scrollArea->addTab(new QTextEdit("文本7", this), "qwert");
+    ui->scrollArea->addTab(new QTextEdit("文本2", this), "Tab2");
+    ui->scrollArea->addTab(new QTextEdit("文本3", this), "Tab3");
+    ui->scrollArea->addTab(new QTextEdit("文本4", this), "Tab4");
+    ui->scrollArea->addTab(new QTextEdit("文本5", this), "Tab5");
+    ui->scrollArea->addTab(new QTextEdit("文本6", this), "Tab6");
+    ui->scrollArea->addTab(new QTextEdit("文本7", this), "Tab7");
 }
 
 MainWindow::~MainWindow()
@@ -53,4 +53,12 @@ void MainWindow::on_actioncloseTab_triggered()
 void MainWindow::on_actionduplicateTab_triggered()
 {
 
+}
+
+void MainWindow::on_actioncurrent_group_triggered()
+{
+    auto group = ui->scrollArea->currentGroup();
+    qDebug() << "current:" << group;
+    if (group && group->currentIndex() > -1)
+        qDebug() << group->tabText(group->currentIndex());
 }

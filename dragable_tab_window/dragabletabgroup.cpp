@@ -12,6 +12,11 @@ DragableTabGroup::DragableTabGroup(QWidget *parent)
 
     connect(tab_bar, SIGNAL(signalStartDrag(int)), this, SLOT(slotStartDrag(int)));
     connect(tab_bar, SIGNAL(signalEndDrag()), this, SLOT(slotDragToNewWindow()));
+
+    connect(qApp, &QApplication::focusChanged, this, [=](QWidget*old, QWidget* now){
+        if (isFocusing())
+            emit signalWidgetFocused(now);
+    });
 }
 
 /**
@@ -21,7 +26,16 @@ DragableTabGroup::DragableTabGroup(QWidget *parent)
  */
 void DragableTabGroup::split(QBoxLayout::Direction direction, bool copy)
 {
+    emit signalSplitCurrentTab(direction, copy);
+}
 
+/**
+ * 是否拥有焦点
+ */
+bool DragableTabGroup::isFocusing()
+{
+    QWidget* widget = QApplication::focusWidget();
+    return widget != nullptr && hasTab(widget);
 }
 
 /**

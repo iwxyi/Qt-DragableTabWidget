@@ -52,15 +52,18 @@
     <property name="title">
      <string>标签组</string>
     </property>
-    <addaction name="actioncloseGroup"/>
     <addaction name="actionsplit_horizone"/>
     <addaction name="actionsplit_vertical"/>
+    <addaction name="separator"/>
+    <addaction name="actioncurrent_group"/>
+    <addaction name="actioncloseGroup"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
      <string>标签</string>
     </property>
     <addaction name="actionduplicateTab"/>
+    <addaction name="separator"/>
     <addaction name="actioncloseTab"/>
    </widget>
    <addaction name="menu"/>
@@ -94,6 +97,11 @@
    </property>
    <property name="text">
     <string>duplicate tab</string>
+   </property>
+  </action>
+  <action name="actioncurrent_group">
+   <property name="text">
+    <string>current group</string>
    </property>
   </action>
  </widget>

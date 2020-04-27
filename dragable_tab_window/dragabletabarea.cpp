@@ -38,7 +38,7 @@ DragableTabGroup *DragableTabArea::createTabArea(QWidget *widget, QString label)
  * @param vertical 横向排列（左右，默认）还是竖向（上下）
  * @return 标签组指针
  */
-DragableTabGroup *DragableTabArea::createTabGroup(DragableTabGroup *base, QBoxLayout::Direction direction)
+DragableTabGroup *DragableTabArea::splitTabGroup(DragableTabGroup *base, QBoxLayout::Direction direction)
 {
     if (base == nullptr) // 不基于某一标签组，创建全窗口标签组
     {
@@ -56,17 +56,22 @@ DragableTabGroup *DragableTabArea::createTabGroup(DragableTabGroup *base, QBoxLa
     DragableTabGroup* group = new DragableTabGroup(this);
     QBoxLayout* layout = static_cast<QBoxLayout*>(base->parentWidget()->layout());
     int index_in_layout = layout->indexOf(base); // 保存当前的索引
+    qDebug() << index_in_layout << ", direction:" << layout->direction() << direction;
     auto layout_direction = layout->direction();
     if (layout_direction == direction)
     {
+        qDebug() << "insert widget";
         layout->insertWidget(index_in_layout+1, group);
     }
     else
     {
+        qDebug() << "insert new layout";
         base->parentWidget()->layout()->removeWidget(base);
         QBoxLayout* sub_layout = new QBoxLayout(direction);
         sub_layout->addWidget(base);
         sub_layout->addWidget(group);
+        if (index_in_layout == -1)
+            index_in_layout = main_layout->count();
         layout->insertLayout(index_in_layout, sub_layout);
     }
     emit signalTabGroupCreated(group);
@@ -127,7 +132,7 @@ DragableTabGroup *DragableTabArea::currentGroup()
     if (count() == 0)
         return nullptr;
     foreach (auto group, tab_groups) {
-        if (group->hasFocus())
+        if (group->isFocusing())
             return group;
     }
     return current_group;
@@ -147,6 +152,23 @@ void DragableTabArea::slotTabGroupCreated(DragableTabGroup *group)
     connect(group, &DragableTabGroup::destroyed, this, [=](QObject*) {
         tab_groups.removeOne(group);
     });
+
+    connect(group, &DragableTabGroup::signalWidgetFocused, this, [=](QWidget*){
+        current_group = group;
+    });
+
+    connect(group, &DragableTabGroup::signalSplitCurrentTab, this, [=](QBoxLayout::Direction direction, bool copy) {
+        auto new_group = splitTabGroup(group, direction);
+        if (group->currentIndex() > -1)
+        {
+            // new_group->addTab 会自动引发 old_group->removeTab
+            new_group->addTab(group->currentWidget(), group->tabText(group->currentIndex()));
+        }
+        if (!copy && group->currentIndex() > -1)
+        {
+            // group->removeTab(group->currentIndex());
+        }
+    });
 }
 
 /**
@@ -155,5 +177,5 @@ void DragableTabArea::slotTabGroupCreated(DragableTabGroup *group)
  */
 void DragableTabArea::slotTabGroupSplited(DragableTabGroup *base, QBoxLayout::Direction direction)
 {
-    createTabGroup(base, direction);
+    splitTabGroup(base, direction);
 }

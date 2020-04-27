@@ -22,6 +22,7 @@ public:
 
     void split(QBoxLayout::Direction direction, bool copy = true);
 
+    bool isFocusing();
     bool hasTab(QWidget* widget);
 
 protected:
@@ -36,6 +37,8 @@ public slots:
 
 signals:
     void signalNewTabWindowCreated(DragableTabGroup* window);
+    void signalWidgetFocused(QWidget* widget);
+    void signalSplitCurrentTab(QBoxLayout::Direction direction, bool copy);
 
 protected:
     DragableTabBar* tab_bar;

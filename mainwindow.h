@@ -27,6 +27,8 @@ private slots:
 
     void on_actionduplicateTab_triggered();
 
+    void on_actioncurrent_group_triggered();
+
 private:
     Ui::MainWindow *ui;
 };
