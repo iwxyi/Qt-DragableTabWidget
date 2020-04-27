@@ -7,6 +7,16 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    createTestTabs();
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::createTestTabs()
+{
     ui->scrollArea->addTab(new QTextEdit("文本1", this), "Tab1");
     ui->scrollArea->addTab(new QTextEdit("文本2", this), "Tab2");
     ui->scrollArea->addTab(new QTextEdit("文本3", this), "Tab3");
@@ -14,11 +24,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->scrollArea->addTab(new QTextEdit("文本5", this), "Tab5");
     ui->scrollArea->addTab(new QTextEdit("文本6", this), "Tab6");
     ui->scrollArea->addTab(new QTextEdit("文本7", this), "Tab7");
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
 }
 
 
@@ -75,4 +80,9 @@ void MainWindow::on_actionopen_tab_in_window_triggered()
 {
     auto group = ui->scrollArea->currentGroup();
     ui->scrollArea->createTabWindow(group);
+}
+
+void MainWindow::on_actioncreate_test_tabs_triggered()
+{
+    createTestTabs();
 }

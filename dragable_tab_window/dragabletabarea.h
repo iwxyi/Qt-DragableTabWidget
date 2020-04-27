@@ -27,6 +27,7 @@ public:
     int count();
     void addTab(QWidget* widget, QString label = "");
     bool hasTab(QWidget* widget);
+    DragableTabGroup* focusGroup(DragableTabGroup* group = nullptr);
     DragableTabGroup* raiseGroupTab(QWidget* widget);
     DragableTabGroup* currentGroup();
     QBoxLayout* getGroupLayout(DragableTabGroup* group);

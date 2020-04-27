@@ -52,6 +52,7 @@
     <property name="title">
      <string>标签组</string>
     </property>
+    <addaction name="actioncreate_test_tabs"/>
     <addaction name="actionsplit_horizone"/>
     <addaction name="actionsplit_vertical"/>
     <addaction name="separator"/>
@@ -114,6 +115,11 @@
   <action name="actionopen_tab_in_window">
    <property name="text">
     <string>open tab in window</string>
+   </property>
+  </action>
+  <action name="actioncreate_test_tabs">
+   <property name="text">
+    <string>create test tabs</string>
    </property>
   </action>
  </widget>

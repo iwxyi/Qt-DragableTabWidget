@@ -29,8 +29,12 @@ QBoxLayout *DragableTabArea::getGroupLayout(QBoxLayout *layout, DragableTabGroup
     {
         auto it = layout->itemAt(i);
         auto lay = qobject_cast<QBoxLayout*>(it->layout());
-        if (lay && getGroupLayout(lay, group))
-            return lay;
+        if (lay)
+        {
+            auto l = getGroupLayout(lay, group);
+            if (l)
+                return l;
+        }
     }
     return nullptr;
 }
@@ -71,19 +75,18 @@ DragableTabGroup *DragableTabArea::splitTabGroup(DragableTabGroup *base, QBoxLay
     }
 
     // 分割标签组
+    if (current_group == nullptr)
+        return nullptr;
     DragableTabGroup* group = new DragableTabGroup(this);
-    QBoxLayout* layout = static_cast<QBoxLayout*>(base->parentWidget()->layout());
+    QBoxLayout* layout = getGroupLayout(current_group); // 获取当前group所在的layout
     int index_in_layout = layout->indexOf(base); // 保存当前的索引
-    qDebug() << index_in_layout << ", direction:" << layout->direction() << direction;
     auto layout_direction = layout->direction();
     if (layout_direction == direction)
     {
-        qDebug() << "insert widget";
         layout->insertWidget(index_in_layout+1, group);
     }
     else
     {
-        qDebug() << "insert new layout";
         base->parentWidget()->layout()->removeWidget(base);
         QBoxLayout* sub_layout = new QBoxLayout(direction);
         sub_layout->addWidget(base);
@@ -91,6 +94,15 @@ DragableTabGroup *DragableTabArea::splitTabGroup(DragableTabGroup *base, QBoxLay
         if (index_in_layout == -1)
             index_in_layout = main_layout->count();
         layout->insertLayout(index_in_layout, sub_layout);
+
+        // 子Layout删除的时候，递归删除父Layout（直到根Layout）
+        if (layout != main_layout)
+        {
+            connect(sub_layout, &QBoxLayout::destroyed, layout, [=](QObject* object){
+                if (layout->count() == 0)
+                    layout->deleteLater();
+            });
+        }
     }
     emit signalTabGroupCreated(group);
     return group;
@@ -169,6 +181,17 @@ bool DragableTabArea::hasTab(QWidget *widget)
 }
 
 /**
+ * 聚焦某一个标签组
+ */
+DragableTabGroup *DragableTabArea::focusGroup(DragableTabGroup *group)
+{
+    if (group == nullptr)
+        group = currentGroup();
+    group->raise();
+    return group;
+}
+
+/**
  * 聚焦某一个控件并聚焦、置顶
  */
 DragableTabGroup *DragableTabArea::raiseGroupTab(QWidget *widget)
@@ -223,6 +246,11 @@ void DragableTabArea::slotTabGroupCreated(DragableTabGroup *group)
 
     connect(group, &DragableTabGroup::destroyed, this, [=](QObject*) {
         tab_groups.removeOne(group);
+
+        // 如果它所在的layout是空的，移除
+        QBoxLayout* layout = getGroupLayout(group);
+        if (layout != nullptr && layout != main_layout && layout->count() == 0)
+            layout->deleteLater();
     });
 
     connect(group, &DragableTabGroup::signalWidgetFocused, this, [=](QWidget*){

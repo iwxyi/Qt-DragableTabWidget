@@ -16,6 +16,8 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void createTestTabs();
+
 private slots:
     void on_actioncloseGroup_triggered();
 
@@ -32,6 +34,8 @@ private slots:
     void on_actioncurrent_group_layout_triggered();
 
     void on_actionopen_tab_in_window_triggered();
+
+    void on_actioncreate_test_tabs_triggered();
 
 private:
     Ui::MainWindow *ui;
