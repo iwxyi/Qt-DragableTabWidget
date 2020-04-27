@@ -18,6 +18,24 @@ void DragableTabArea::initView()
 }
 
 /**
+ * 递归获取标签组所在的layout
+ * （不一定在这个标签组里面）
+ */
+QBoxLayout *DragableTabArea::getGroupLayout(QBoxLayout *layout, DragableTabGroup *group)
+{
+    if (layout->indexOf(group) > -1)
+        return layout;
+    for (int i = 0; i < layout->count(); i++)
+    {
+        auto it = layout->itemAt(i);
+        auto lay = qobject_cast<QBoxLayout*>(it->layout());
+        if (lay && getGroupLayout(lay, group))
+            return lay;
+    }
+    return nullptr;
+}
+
+/**
  * 创建标签组
  * @param widget 初始化的标签页。如果!=nullptr，则设置为tab1
  * @return 标签组指针
@@ -93,6 +111,33 @@ DragableTabGroup *DragableTabArea::createTabWindow(QWidget *widget, QString labe
     return group;
 }
 
+/**
+ * 标签组的某一标签移动到新窗口
+ */
+DragableTabGroup *DragableTabArea::createTabWindow(DragableTabGroup *group, int index)
+{
+    if (group == nullptr)
+        return nullptr;
+    if (index == -1)
+        index = group->currentIndex();
+    if (index == -1)
+        return nullptr;
+
+    DragableTabGroup* window = new DragableTabGroup(nullptr);
+    window->resize(this->size());
+    window->move(this->mapToGlobal(pos()));
+    window->show();
+
+    QString label = group->tabText(index);
+    QWidget* widget = group->widget(index);
+    group->removeTab(index);
+    window->addTab(widget, label);
+    emit group->signalNewTabWindowCreated(window);
+    group->deleteIfEmpty();
+    return window;
+
+}
+
 int DragableTabArea::count()
 {
     return tab_groups.count();
@@ -115,11 +160,29 @@ void DragableTabArea::addTab(QWidget *widget, QString label)
  */
 bool DragableTabArea::hasTab(QWidget *widget)
 {
-    foreach (auto group, tab_groups) {
+    foreach (auto group, tab_groups)
+    {
         if (group->hasTab(widget))
             return true;
     }
     return false;
+}
+
+/**
+ * 聚焦某一个控件并聚焦、置顶
+ */
+DragableTabGroup *DragableTabArea::raiseGroupTab(QWidget *widget)
+{
+    foreach (auto group, tab_groups)
+    {
+        if (group->hasTab(widget))
+        {
+            group->setCurrentWidget(widget);
+            group->raise();
+            return group;
+        }
+    }
+    return nullptr;
 }
 
 /**
@@ -131,11 +194,20 @@ DragableTabGroup *DragableTabArea::currentGroup()
 {
     if (count() == 0)
         return nullptr;
-    foreach (auto group, tab_groups) {
+    foreach (auto group, tab_groups)
+    {
         if (group->isFocusing())
             return group;
     }
     return current_group;
+}
+
+/**
+ * 获取某一标签组所在的layout
+ */
+QBoxLayout *DragableTabArea::getGroupLayout(DragableTabGroup *group)
+{
+    return getGroupLayout(main_layout, group);
 }
 
 /**

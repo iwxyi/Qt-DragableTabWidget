@@ -22,16 +22,20 @@ public:
     DragableTabGroup* createTabArea(QWidget* widget = nullptr, QString label = ""); // 创建层叠窗口
     DragableTabGroup *splitTabGroup(DragableTabGroup* base, QBoxLayout::Direction direction = QBoxLayout::LeftToRight); // 基于某一标签组，分割出来
     DragableTabGroup* createTabWindow(QWidget* widget = nullptr, QString label = "");
+    DragableTabGroup* createTabWindow(DragableTabGroup* group, int index = -1);
 
     int count();
     void addTab(QWidget* widget, QString label = "");
     bool hasTab(QWidget* widget);
+    DragableTabGroup* raiseGroupTab(QWidget* widget);
     DragableTabGroup* currentGroup();
+    QBoxLayout* getGroupLayout(DragableTabGroup* group);
 
 protected:
 
 private:
     void initView();
+    QBoxLayout* getGroupLayout(QBoxLayout *layout, DragableTabGroup *group);
 
 signals:
     void signalTabGroupCreated(DragableTabGroup* group);

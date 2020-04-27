@@ -56,12 +56,14 @@
     <addaction name="actionsplit_vertical"/>
     <addaction name="separator"/>
     <addaction name="actioncurrent_group"/>
+    <addaction name="actioncurrent_group_layout"/>
     <addaction name="actioncloseGroup"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
      <string>标签</string>
     </property>
+    <addaction name="actionopen_tab_in_window"/>
     <addaction name="actionduplicateTab"/>
     <addaction name="separator"/>
     <addaction name="actioncloseTab"/>
@@ -102,6 +104,16 @@
   <action name="actioncurrent_group">
    <property name="text">
     <string>current group</string>
+   </property>
+  </action>
+  <action name="actioncurrent_group_layout">
+   <property name="text">
+    <string>current group layout</string>
+   </property>
+  </action>
+  <action name="actionopen_tab_in_window">
+   <property name="text">
+    <string>open tab in window</string>
    </property>
   </action>
  </widget>

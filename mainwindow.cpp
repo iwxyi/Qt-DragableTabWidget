@@ -62,3 +62,17 @@ void MainWindow::on_actioncurrent_group_triggered()
     if (group && group->currentIndex() > -1)
         qDebug() << group->tabText(group->currentIndex());
 }
+
+void MainWindow::on_actioncurrent_group_layout_triggered()
+{
+    auto group = ui->scrollArea->currentGroup();
+    qDebug() << "current:" << group;
+    if (group && group->currentIndex() > -1)
+        qDebug() << "nearest layout:" << ui->scrollArea->getGroupLayout(group);
+}
+
+void MainWindow::on_actionopen_tab_in_window_triggered()
+{
+    auto group = ui->scrollArea->currentGroup();
+    ui->scrollArea->createTabWindow(group);
+}

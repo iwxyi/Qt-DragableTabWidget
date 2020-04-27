@@ -24,6 +24,7 @@ public:
 
     bool isFocusing();
     bool hasTab(QWidget* widget);
+    void deleteIfEmpty();
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event);
@@ -32,7 +33,7 @@ protected:
 
 public slots:
     void slotStartDrag(int index);
-    void slotDragToNewWindow();
+    DragableTabGroup *slotDragToNewWindow();
     bool slotMergeLabel(QDropEvent* event);
 
 signals:

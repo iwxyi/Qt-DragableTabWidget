@@ -29,6 +29,10 @@ private slots:
 
     void on_actioncurrent_group_triggered();
 
+    void on_actioncurrent_group_layout_triggered();
+
+    void on_actionopen_tab_in_window_triggered();
+
 private:
     Ui::MainWindow *ui;
 };

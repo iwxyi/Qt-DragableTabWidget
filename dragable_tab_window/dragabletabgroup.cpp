@@ -51,6 +51,12 @@ bool DragableTabGroup::hasTab(QWidget *widget)
     return false;
 }
 
+void DragableTabGroup::deleteIfEmpty()
+{
+    if (!_is_main && count() == 0)
+        deleteLater();
+}
+
 void DragableTabGroup::dragEnterEvent(QDragEnterEvent *event)
 {
     const QMimeData* mime = event->mimeData();
@@ -140,7 +146,7 @@ void DragableTabGroup::slotStartDrag(int index)
 /**
  * 自己的标签拖出到新窗口
  */
-void DragableTabGroup::slotDragToNewWindow()
+DragableTabGroup* DragableTabGroup::slotDragToNewWindow()
 {
     if (count() == 1) // 只有一个标签，直接移动窗口
     {
@@ -159,6 +165,7 @@ void DragableTabGroup::slotDragToNewWindow()
     emit signalNewTabWindowCreated(window);
     if (!_is_main && count() == 0) // 标签拖完了
         deleteLater();
+    return window;
 }
 
 /**
