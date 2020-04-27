@@ -79,6 +79,8 @@ DragableTabGroup *DragableTabArea::splitTabGroup(DragableTabGroup *base, QBoxLay
         return nullptr;
     DragableTabGroup* group = new DragableTabGroup(this);
     QBoxLayout* layout = getGroupLayout(current_group); // 获取当前group所在的layout
+    if (layout == nullptr) // 如果是单独一个窗口，那么就是nullptr
+        return nullptr;
     int index_in_layout = layout->indexOf(base); // 保存当前的索引
     auto layout_direction = layout->direction();
     if (layout_direction == direction)
@@ -98,7 +100,7 @@ DragableTabGroup *DragableTabArea::splitTabGroup(DragableTabGroup *base, QBoxLay
         // 子Layout删除的时候，递归删除父Layout（直到根Layout）
         if (layout != main_layout)
         {
-            connect(sub_layout, &QBoxLayout::destroyed, layout, [=](QObject* object){
+            connect(sub_layout, &QBoxLayout::destroyed, layout, [=](QObject*){
                 if (layout->count() == 0)
                     layout->deleteLater();
             });
@@ -259,6 +261,8 @@ void DragableTabArea::slotTabGroupCreated(DragableTabGroup *group)
 
     connect(group, &DragableTabGroup::signalSplitCurrentTab, this, [=](QBoxLayout::Direction direction, bool copy) {
         auto new_group = splitTabGroup(group, direction);
+        if (new_group == nullptr) // tab单独一个窗口，无法分割
+            return ;
         if (group->currentIndex() > -1)
         {
             // new_group->addTab 会自动引发 old_group->removeTab
@@ -266,6 +270,7 @@ void DragableTabArea::slotTabGroupCreated(DragableTabGroup *group)
         }
         if (!copy && group->currentIndex() > -1)
         {
+            // 其他add时，自己会自动remove
             // group->removeTab(group->currentIndex());
         }
     });
