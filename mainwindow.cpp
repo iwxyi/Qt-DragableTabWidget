@@ -36,6 +36,9 @@ void MainWindow::on_actioncloseGroup_triggered()
 
 void MainWindow::on_actionsplit_horizone_triggered()
 {
+    /*auto rst = ui->scrollArea->splitTabGroup(ui->scrollArea->currentGroup(), QBoxLayout::LeftToRight);
+    if (rst)
+        ui->scrollArea->focusGroup(rst);*/
     auto group = ui->scrollArea->currentGroup();
     if (group)
         group->split(QBoxLayout::LeftToRight);
@@ -43,6 +46,9 @@ void MainWindow::on_actionsplit_horizone_triggered()
 
 void MainWindow::on_actionsplit_vertical_triggered()
 {
+    /*auto rst = ui->scrollArea->splitGroupLayout(ui->scrollArea->currentGroup(), QBoxLayout::TopToBottom);
+    if (rst)
+        ui->scrollArea->focusGroup(rst);*/
     auto group = ui->scrollArea->currentGroup();
     if (group)
         group->split(QBoxLayout::TopToBottom);
@@ -85,4 +91,15 @@ void MainWindow::on_actionopen_tab_in_window_triggered()
 void MainWindow::on_actioncreate_test_tabs_triggered()
 {
     createTestTabs();
+}
+
+void MainWindow::on_actionmerge_group_triggered()
+{
+    auto group = ui->scrollArea->currentGroup();
+    if (group)
+    {
+        auto rst = ui->scrollArea->mergeGroup(group);
+        if (rst)
+            ui->scrollArea->focusGroup(rst);
+    }
 }

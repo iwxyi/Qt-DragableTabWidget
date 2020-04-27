@@ -37,6 +37,8 @@ private slots:
 
     void on_actioncreate_test_tabs_triggered();
 
+    void on_actionmerge_group_triggered();
+
 private:
     Ui::MainWindow *ui;
 };

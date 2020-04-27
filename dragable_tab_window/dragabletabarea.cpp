@@ -14,7 +14,7 @@ void DragableTabArea::initView()
     main_layout->setSpacing(0);
 
     // 创建一个默认 TabGroup
-    createTabArea();
+    createTabGroup();
 }
 
 /**
@@ -23,17 +23,45 @@ void DragableTabArea::initView()
  */
 QBoxLayout *DragableTabArea::getGroupLayout(QBoxLayout *layout, DragableTabGroup *group)
 {
-    if (layout->indexOf(group) > -1)
+    if (layout->indexOf(group) > -1) // 就在这个layout里面
         return layout;
     for (int i = 0; i < layout->count(); i++)
     {
         auto it = layout->itemAt(i);
         auto lay = qobject_cast<QBoxLayout*>(it->layout());
-        if (lay)
+        if (lay) // 这个 LayoutItem 是 layout
         {
-            auto l = getGroupLayout(lay, group);
+            auto l = getGroupLayout(lay, group); // 递归
             if (l)
                 return l;
+        }
+    }
+    return nullptr;
+}
+
+/**
+ * 递归获取标签页所在的layout路径
+ * 尝试的时候如栈，若没有成功则出栈
+ */
+QBoxLayout* DragableTabArea::getGroupLayoutPath(QList<QBoxLayout *> &path, QBoxLayout *layout, DragableTabGroup *group)
+{
+    if (layout->indexOf(group) > -1)
+    {
+        path.push_back(layout);
+        return layout;
+    }
+    for (int i = 0; i < layout->count(); i++)
+    {
+        auto it = layout->itemAt(i);
+        auto lay = qobject_cast<QBoxLayout*>(it->layout());
+        if (lay) // 这个 LayoutItem 是 layout
+        {
+            path.push_back(lay);
+            auto l = getGroupLayoutPath(path, lay, group);
+            if (l) // 找到，返回所有路径
+                return l;
+            else // 没找到，pop
+                path.pop_back();
         }
     }
     return nullptr;
@@ -44,7 +72,7 @@ QBoxLayout *DragableTabArea::getGroupLayout(QBoxLayout *layout, DragableTabGroup
  * @param widget 初始化的标签页。如果!=nullptr，则设置为tab1
  * @return 标签组指针
  */
-DragableTabGroup *DragableTabArea::createTabArea(QWidget *widget, QString label)
+DragableTabGroup *DragableTabArea::createTabGroup(QWidget *widget, QString label)
 {
     DragableTabGroup* group = new DragableTabGroup(this);
     if (widget)
@@ -60,13 +88,13 @@ DragableTabGroup *DragableTabArea::createTabArea(QWidget *widget, QString label)
  * @param vertical 横向排列（左右，默认）还是竖向（上下）
  * @return 标签组指针
  */
-DragableTabGroup *DragableTabArea::splitTabGroup(DragableTabGroup *base, QBoxLayout::Direction direction)
+DragableTabGroup *DragableTabArea::splitGroupLayout(DragableTabGroup *base, QBoxLayout::Direction direction)
 {
     if (base == nullptr) // 不基于某一标签组，创建全窗口标签组
     {
         if (count() == 0) // 没有标签组，创建全窗口标签组
         {
-            return createTabArea();
+            return createTabGroup();
         }
         else // 已经有标签组，新窗口
         {
@@ -97,7 +125,7 @@ DragableTabGroup *DragableTabArea::splitTabGroup(DragableTabGroup *base, QBoxLay
             index_in_layout = main_layout->count();
         layout->insertLayout(index_in_layout, sub_layout);
 
-        // 子Layout删除的时候，递归删除父Layout（直到根Layout）
+        // 连接信号槽：子Layout删除的时候，递归删除父Layout（直到根Layout）
         if (layout != main_layout)
         {
             connect(sub_layout, &QBoxLayout::destroyed, layout, [=](QObject*){
@@ -163,10 +191,23 @@ int DragableTabArea::count()
 void DragableTabArea::addTab(QWidget *widget, QString label)
 {
     if (count() == 0)
-        createTabArea();
+        createTabGroup();
     if (current_group == nullptr)
         current_group = tab_groups.first();
     current_group->addTab(widget, label);
+}
+
+bool DragableTabArea::removeTab(QWidget *widget)
+{
+    foreach (auto group, tab_groups)
+    {
+        if (group->hasTab(widget))
+        {
+            group->removeTab(group->indexOf(widget));
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
@@ -183,6 +224,102 @@ bool DragableTabArea::hasTab(QWidget *widget)
 }
 
 /**
+ * 合并标签组
+ * @return 合并后的group
+ */
+DragableTabGroup* DragableTabArea::mergeGroup(DragableTabGroup *group)
+{
+    /*auto layout = getGroupLayout(group);
+    if (layout == nullptr) // 窗口
+        return nullptr;
+    else if (layout->count() <= 1) // 只有一个元素
+        return nullptr;*/
+    QList<QBoxLayout*>path = getGroupLayoutPath(group);
+    if (path.size() == 0) // 无处合并
+        return nullptr;
+    DragableTabGroup* target = nullptr;
+    QBoxLayout* prev_layout = nullptr;
+    while (path.size())
+    {
+        auto layout = path.takeLast();
+        // 判断layout的数量，2个才能合并
+        if (layout->count() > 1)
+        {
+            int index = (prev_layout == nullptr
+                         ? layout->indexOf(group)
+                         : layout->indexOf(prev_layout));
+            if (index > -1)
+            {
+                // 首先尝试合并group
+                for (int i = index-1; i >= 0; i--)
+                {
+                    auto it = layout->itemAt(i);
+                    auto gro = qobject_cast<DragableTabGroup*>(it->widget());
+                    if (gro)
+                        return mergeGroup(group, gro);
+                }
+                for (int i = index+1; i < layout->count(); i++)
+                {
+                    auto it = layout->itemAt(i);
+                    auto gro = qobject_cast<DragableTabGroup*>(it->layout());
+                    if (gro)
+                        return mergeGroup(group, gro);
+                }
+                // 没有可以合并的group，尝试合并至同级或子级layout的group
+                for (int i = index-1; i >= 0; i--)
+                {
+                    auto it = layout->itemAt(i);
+                    auto lay = qobject_cast<QBoxLayout*>(it->layout());
+                    if (lay)
+                    {
+                        auto gro = qobject_cast<DragableTabGroup*>(lay->itemAt(0)->widget());
+                        if (gro)
+                            return mergeGroup(group, gro);
+                    }
+                }
+                for (int i = index+1; i < layout->count(); i++)
+                {
+                    auto it = layout->itemAt(i);
+                    auto lay = qobject_cast<QBoxLayout*>(it->layout());
+                    if (lay)
+                    {
+                        auto gro = qobject_cast<DragableTabGroup*>(lay->itemAt(0)->widget());
+                        if (gro)
+                            return mergeGroup(group, gro);
+                    }
+                }
+            }
+        }
+        prev_layout = layout; // 保存上次的位置，用来确定路径
+    }
+    if (target)
+        return mergeGroup(group, target);
+    else
+        return nullptr;
+}
+
+/**
+ * 合并标签组：dead => live
+ */
+DragableTabGroup *DragableTabArea::mergeGroup(DragableTabGroup *dead, DragableTabGroup *live)
+{
+    for (int i = 0; i < dead->count(); i ++)
+    {
+        live->addTab(dead->widget(i), dead->tabText(i));
+    }
+    dead->deleteIfEmpty();
+    return live;
+}
+
+/**
+ * 删除标签组
+ */
+void DragableTabArea::closeGroup(DragableTabGroup *group)
+{
+    group->deleteLater();
+}
+
+/**
  * 聚焦某一个标签组
  */
 DragableTabGroup *DragableTabArea::focusGroup(DragableTabGroup *group)
@@ -196,7 +333,7 @@ DragableTabGroup *DragableTabArea::focusGroup(DragableTabGroup *group)
 /**
  * 聚焦某一个控件并聚焦、置顶
  */
-DragableTabGroup *DragableTabArea::raiseGroupTab(QWidget *widget)
+DragableTabGroup *DragableTabArea::focusGroupTab(QWidget *widget)
 {
     foreach (auto group, tab_groups)
     {
@@ -219,6 +356,8 @@ DragableTabGroup *DragableTabArea::currentGroup()
 {
     if (count() == 0)
         return nullptr;
+    else if (count() == 1)
+        return tab_groups.at(0);
     foreach (auto group, tab_groups)
     {
         if (group->isFocusing())
@@ -233,6 +372,17 @@ DragableTabGroup *DragableTabArea::currentGroup()
 QBoxLayout *DragableTabArea::getGroupLayout(DragableTabGroup *group)
 {
     return getGroupLayout(main_layout, group);
+}
+
+/**
+ * 获取某一标签组所在的layout路径
+ * @return 整个路径所在的位置，若是单独一个窗口则没有layout
+ */
+QList<QBoxLayout *> DragableTabArea::getGroupLayoutPath(DragableTabGroup *group)
+{
+    QList<QBoxLayout *> path;
+    getGroupLayoutPath(path, main_layout, group);
+    return path;
 }
 
 /**
@@ -260,7 +410,7 @@ void DragableTabArea::slotTabGroupCreated(DragableTabGroup *group)
     });
 
     connect(group, &DragableTabGroup::signalSplitCurrentTab, this, [=](QBoxLayout::Direction direction, bool copy) {
-        auto new_group = splitTabGroup(group, direction);
+        auto new_group = splitGroupLayout(group, direction);
         if (new_group == nullptr) // tab单独一个窗口，无法分割
             return ;
         if (group->currentIndex() > -1)
@@ -273,6 +423,9 @@ void DragableTabArea::slotTabGroupCreated(DragableTabGroup *group)
             // 其他add时，自己会自动remove
             // group->removeTab(group->currentIndex());
         }
+
+        // 由于这是手动操作，先获取焦点吧
+        new_group->setFocus();
     });
 }
 
@@ -282,5 +435,5 @@ void DragableTabArea::slotTabGroupCreated(DragableTabGroup *group)
  */
 void DragableTabArea::slotTabGroupSplited(DragableTabGroup *base, QBoxLayout::Direction direction)
 {
-    splitTabGroup(base, direction);
+    splitGroupLayout(base, direction);
 }

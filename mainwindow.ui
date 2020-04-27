@@ -55,6 +55,7 @@
     <addaction name="actioncreate_test_tabs"/>
     <addaction name="actionsplit_horizone"/>
     <addaction name="actionsplit_vertical"/>
+    <addaction name="actionmerge_group"/>
     <addaction name="separator"/>
     <addaction name="actioncurrent_group"/>
     <addaction name="actioncurrent_group_layout"/>
@@ -120,6 +121,11 @@
   <action name="actioncreate_test_tabs">
    <property name="text">
     <string>create test tabs</string>
+   </property>
+  </action>
+  <action name="actionmerge_group">
+   <property name="text">
+    <string>merge group</string>
    </property>
   </action>
  </widget>

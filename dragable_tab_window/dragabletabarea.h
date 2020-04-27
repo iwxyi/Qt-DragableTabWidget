@@ -19,29 +19,35 @@ class DragableTabArea : public QScrollArea
 public:
     DragableTabArea(QWidget* parent = nullptr);
 
-    DragableTabGroup* createTabArea(QWidget* widget = nullptr, QString label = ""); // 创建层叠窗口
-    DragableTabGroup *splitTabGroup(DragableTabGroup* base, QBoxLayout::Direction direction = QBoxLayout::LeftToRight); // 基于某一标签组，分割出来
+    DragableTabGroup* createTabGroup(QWidget* widget = nullptr, QString label = ""); // 创建层叠窗口
+    DragableTabGroup* splitGroupLayout(DragableTabGroup* base, QBoxLayout::Direction direction = QBoxLayout::LeftToRight); // 基于某一标签组，分割出来
     DragableTabGroup* createTabWindow(QWidget* widget = nullptr, QString label = "");
     DragableTabGroup* createTabWindow(DragableTabGroup* group, int index = -1);
 
     int count();
     void addTab(QWidget* widget, QString label = "");
+    bool removeTab(QWidget* widget);
     bool hasTab(QWidget* widget);
+    DragableTabGroup *mergeGroup(DragableTabGroup* group);
+    DragableTabGroup* mergeGroup(DragableTabGroup* dead, DragableTabGroup* live);
+    void closeGroup(DragableTabGroup* group);
     DragableTabGroup* focusGroup(DragableTabGroup* group = nullptr);
-    DragableTabGroup* raiseGroupTab(QWidget* widget);
+    DragableTabGroup* focusGroupTab(QWidget* widget);
     DragableTabGroup* currentGroup();
     QBoxLayout* getGroupLayout(DragableTabGroup* group);
+    QList<QBoxLayout*> getGroupLayoutPath(DragableTabGroup* group);
 
 protected:
 
 private:
     void initView();
     QBoxLayout* getGroupLayout(QBoxLayout *layout, DragableTabGroup *group);
+    QBoxLayout *getGroupLayoutPath(QList<QBoxLayout*>&path, QBoxLayout *layout, DragableTabGroup *group);
 
 signals:
     void signalTabGroupCreated(DragableTabGroup* group);
 
-public slots:
+private slots:
     void slotTabGroupCreated(DragableTabGroup* group);
     void slotTabGroupSplited(DragableTabGroup* base, QBoxLayout::Direction direction = QBoxLayout::LeftToRight);
 
@@ -49,8 +55,10 @@ private slots:
 
 private:
     QHBoxLayout* main_layout;
-    QList<DragableTabGroup*> tab_groups; // 当前的标签组（不一定是窗口）
-    DragableTabGroup* current_group = nullptr;
+    QList<DragableTabGroup*> tab_groups; // 所有标签组
+    // QList<DragableTabArea*> area_windows; // 所有的area（包括自己，自己是main）
+    // bool _is_main = true; // tab_group被清空后，是否删除tab_area（如果不是main的话）
+    DragableTabGroup* current_group = nullptr; // 全局当前
 };
 
 #endif // DRAGABLETABAREA_H
