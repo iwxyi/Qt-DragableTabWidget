@@ -1,8 +1,8 @@
-#include "dragabletabwindow.h"
+#include "dragabletabgroup.h"
 
-bool DragableTabWindow::_drag_merged = false;
+bool DragableTabGroup::_drag_merged = false;
 
-DragableTabWindow::DragableTabWindow(QWidget *parent)
+DragableTabGroup::DragableTabGroup(QWidget *parent)
     : QTabWidget(parent), tab_bar(new DragableTabBar(this)),
       dragging_index(0), dragging_widget(nullptr), _is_main(false)
 {
@@ -14,31 +14,63 @@ DragableTabWindow::DragableTabWindow(QWidget *parent)
     connect(tab_bar, SIGNAL(signalEndDrag()), this, SLOT(slotDragToNewWindow()));
 }
 
-void DragableTabWindow::dragEnterEvent(QDragEnterEvent *event)
+/**
+ * 分割标签组
+ * @param direction 方向
+ * @param copy      是否复制（默认复制，保留旧tab）
+ */
+void DragableTabGroup::split(QBoxLayout::Direction direction, bool copy)
+{
+
+}
+
+/**
+ * 是否包含某一widget
+ */
+bool DragableTabGroup::hasTab(QWidget *widget)
+{
+    for (int i = 0; i < count(); i++)
+    {
+        if (this->widget(i) == widget)
+            return true;
+    }
+    return false;
+}
+
+void DragableTabGroup::dragEnterEvent(QDragEnterEvent *event)
 {
     const QMimeData* mime = event->mimeData();
-    if (mime->hasFormat(DRAGABLE_TAB_WIDGET_MIME_KEY)) // 整行拖拽
+    if (mime->hasFormat(DRAGABLE_TAB_WIDGET_MIME_KEY)) // Tab拖拽
     {
-        QPoint pos = event->pos();
-        if (pos.y() <= tab_bar->geometry().bottom()+tab_bar->height()) // 只有 tabBar 的位置可拖拽
+        /*QPoint pos = event->pos();
+        if (pos.y() >= tab_bar->geometry().top() - qMax(tab_bar->height(), 32) && pos.y() <= tab_bar->geometry().bottom()+qMax(tab_bar->height(), 32)) // 只有 tabBar 的位置可拖拽
             event->accept();
         else
-            event->ignore();
+            event->ignore();*/
+        event->accept();
     }
 
     return QTabWidget::dragEnterEvent(event);
 }
 
-void DragableTabWindow::dragMoveEvent(QDragMoveEvent *event)
+void DragableTabGroup::dragMoveEvent(QDragMoveEvent *event)
 {
     const QMimeData* mime = event->mimeData();
-    if (mime->hasFormat(DRAGABLE_TAB_WIDGET_MIME_KEY)) // 整行拖拽
+    if (count() == 0)
+    {
+        event->accept();
+    }
+    else if (mime->hasFormat(DRAGABLE_TAB_WIDGET_MIME_KEY)) // 整行拖拽
     {
         QPoint pos = event->pos();
-        if (pos.y() <= tab_bar->geometry().bottom()+tab_bar->height()) // 只有 tabBar 的位置可拖拽
+        if (pos.y() >= tab_bar->geometry().top() - qMax(tab_bar->height(), 32) && pos.y() <= tab_bar->geometry().bottom()+qMax(tab_bar->height(), 32)) // 只有 tabBar 的位置可拖拽
+        {
             event->accept();
+        }
         else
+        {
             event->ignore();
+        }
     }
     else
     {
@@ -46,7 +78,7 @@ void DragableTabWindow::dragMoveEvent(QDragMoveEvent *event)
     }
 }
 
-void DragableTabWindow::dropEvent(QDropEvent *event)
+void DragableTabGroup::dropEvent(QDropEvent *event)
 {
     if (slotMergeLabel(event))
         event->accept();
@@ -57,7 +89,7 @@ void DragableTabWindow::dropEvent(QDropEvent *event)
 /**
  * 开始标签拖拽
  */
-void DragableTabWindow::slotStartDrag(int index)
+void DragableTabGroup::slotStartDrag(int index)
 {
     dragging_index = index;
     dragging_widget = this->widget(index);
@@ -94,7 +126,7 @@ void DragableTabWindow::slotStartDrag(int index)
 /**
  * 自己的标签拖出到新窗口
  */
-void DragableTabWindow::slotDragToNewWindow()
+void DragableTabGroup::slotDragToNewWindow()
 {
     if (count() == 1) // 只有一个标签，直接移动窗口
     {
@@ -103,14 +135,14 @@ void DragableTabWindow::slotDragToNewWindow()
         // return ;
     }
 
-    DragableTabWindow* window = new DragableTabWindow(nullptr/*_is_main ? this : this->parentWidget()*/);
+    DragableTabGroup* window = new DragableTabGroup(nullptr/*_is_main ? this : this->parentWidget()*/);
     window->resize(this->size());
     window->move(QCursor::pos()-dragging_point_delta-QPoint(0,tab_bar->height()));
     window->show();
     QString label = tab_bar->tabText(dragging_index);
     removeTab(dragging_index);
     window->addTab(dragging_widget, label);
-    emit signalTabWindowCreated(window);
+    emit signalNewTabWindowCreated(window);
     if (!_is_main && count() == 0) // 标签拖完了
         deleteLater();
 }
@@ -118,7 +150,7 @@ void DragableTabWindow::slotDragToNewWindow()
 /**
  * 另一个窗口拖拽本窗口的tabbar，合并标签
  */
-bool DragableTabWindow::slotMergeLabel(QDropEvent *event)
+bool DragableTabGroup::slotMergeLabel(QDropEvent *event)
 {
     _drag_merged = true;
     int insert_index = count();
@@ -131,7 +163,7 @@ bool DragableTabWindow::slotMergeLabel(QDropEvent *event)
 
     // 被拖拽的信息
     const QMimeData* mime = event->mimeData();
-    DragableTabWindow* window = reinterpret_cast<DragableTabWindow*>(mime->data(DRAGABLE_TAB_WINDOW_MIME_KEY).toInt());
+    DragableTabGroup* window = reinterpret_cast<DragableTabGroup*>(mime->data(DRAGABLE_TAB_WINDOW_MIME_KEY).toInt());
     QWidget* widget = reinterpret_cast<QWidget*>(mime->data(DRAGABLE_TAB_WIDGET_MIME_KEY).toInt());
     QString label = mime->data(DRAGABLE_TAB_LABEL_MIME_KEY);
     if (window == this) // 被拖拽的就是自己

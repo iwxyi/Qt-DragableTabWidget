@@ -16,6 +16,17 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void on_actioncloseGroup_triggered();
+
+    void on_actionsplit_horizone_triggered();
+
+    void on_actionsplit_vertical_triggered();
+
+    void on_actioncloseTab_triggered();
+
+    void on_actionduplicateTab_triggered();
+
 private:
     Ui::MainWindow *ui;
 };

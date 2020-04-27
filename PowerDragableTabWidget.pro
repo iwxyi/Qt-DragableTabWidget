@@ -19,16 +19,16 @@ INCLUDEPATH += \
     dragable_tab_window
 
 SOURCES += \
+    dragable_tab_window/dragabletabarea.cpp \
     dragable_tab_window/dragabletabbar.cpp \
-    dragable_tab_window/dragabletabmain.cpp \
-    dragable_tab_window/dragabletabwindow.cpp \
+    dragable_tab_window/dragabletabgroup.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
+    dragable_tab_window/dragabletabarea.h \
     dragable_tab_window/dragabletabbar.h \
-    dragable_tab_window/dragabletabmain.h \
-    dragable_tab_window/dragabletabwindow.h \
+    dragable_tab_window/dragabletabgroup.h \
     mainwindow.h
 
 FORMS += \

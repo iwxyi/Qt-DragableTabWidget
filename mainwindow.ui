@@ -16,19 +16,19 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="DragableTabMain" name="tabWidget">
-      <property name="currentIndex">
-       <number>1</number>
+     <widget class="DragableTabArea" name="scrollArea">
+      <property name="widgetResizable">
+       <bool>true</bool>
       </property>
-      <widget class="QWidget" name="tab">
-       <attribute name="title">
-        <string>Tab 1</string>
-       </attribute>
-      </widget>
-      <widget class="QWidget" name="tab_2">
-       <attribute name="title">
-        <string>Tab 2</string>
-       </attribute>
+      <widget class="QWidget" name="scrollAreaWidgetContents">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>780</width>
+         <height>535</height>
+        </rect>
+       </property>
       </widget>
      </widget>
     </item>
@@ -43,14 +43,65 @@
      <height>23</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>文件</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>标签组</string>
+    </property>
+    <addaction name="actioncloseGroup"/>
+    <addaction name="actionsplit_horizone"/>
+    <addaction name="actionsplit_vertical"/>
+   </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>标签</string>
+    </property>
+    <addaction name="actionduplicateTab"/>
+    <addaction name="actioncloseTab"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actioncloseGroup">
+   <property name="text">
+    <string>close group</string>
+   </property>
+  </action>
+  <action name="actionsplit_horizone">
+   <property name="text">
+    <string>split horizone</string>
+   </property>
+  </action>
+  <action name="actionsplit_vertical">
+   <property name="text">
+    <string>split vertical</string>
+   </property>
+  </action>
+  <action name="actioncloseTab">
+   <property name="text">
+    <string>close tab</string>
+   </property>
+  </action>
+  <action name="actionduplicateTab">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>duplicate tab</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DragableTabMain</class>
-   <extends>QTabWidget</extends>
-   <header>dragabletabmain.h</header>
+   <class>DragableTabArea</class>
+   <extends>QScrollArea</extends>
+   <header>dragabletabarea.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
