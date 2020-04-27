@@ -19,12 +19,14 @@ class DragableTabArea : public QScrollArea
 public:
     DragableTabArea(QWidget* parent = nullptr);
 
-    DragableTabGroup* createTabGroup(QWidget* widget = nullptr, QString label = ""); // 创建层叠窗口
-    DragableTabGroup* splitGroupLayout(DragableTabGroup* base, QBoxLayout::Direction direction = QBoxLayout::LeftToRight); // 基于某一标签组，分割出来
+    DragableTabGroup* createTabGroup(QWidget* widget = nullptr, QString label = "");
+    DragableTabGroup* splitGroupLayout(DragableTabGroup* base, QBoxLayout::Direction direction = QBoxLayout::LeftToRight);
+    DragableTabGroup* splitGroupTab(DragableTabGroup* group, int index, QBoxLayout::Direction direction = QBoxLayout::LeftToRight, bool copy = false);
     DragableTabGroup* createTabWindow(QWidget* widget = nullptr, QString label = "");
     DragableTabGroup* createTabWindow(DragableTabGroup* group, int index = -1);
 
     int count();
+    int countInMain();
     void addTab(QWidget* widget, QString label = "");
     bool removeTab(QWidget* widget);
     bool hasTab(QWidget* widget);
@@ -38,6 +40,8 @@ public:
     QList<QBoxLayout*> getGroupLayoutPath(DragableTabGroup* group);
 
 protected:
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dropEvent(QDropEvent *event);
 
 private:
     void initView();

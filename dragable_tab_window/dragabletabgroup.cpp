@@ -9,9 +9,11 @@ DragableTabGroup::DragableTabGroup(QWidget *parent)
     setAcceptDrops(true);
     setTabBar(tab_bar);
     setMovable(true);
+//    setTabsClosable(true);
+//    tab_bar->setAutoHide(true);
 
     connect(tab_bar, SIGNAL(signalStartDrag(int)), this, SLOT(slotStartDrag(int)));
-    connect(tab_bar, SIGNAL(signalEndDrag()), this, SLOT(slotDragToNewWindow()));
+    connect(tab_bar, SIGNAL(signalEndDrag()), this, SLOT(createDraggedNewWindow()));
 
     connect(qApp, &QApplication::focusChanged, this, [=](QWidget*old, QWidget* now){
         if (isFocusing())
@@ -100,7 +102,7 @@ void DragableTabGroup::dragMoveEvent(QDragMoveEvent *event)
 
 void DragableTabGroup::dropEvent(QDropEvent *event)
 {
-    if (slotMergeLabel(event))
+    if (mergeDroppedLabel(event))
         event->accept();
 
     return QTabWidget::dropEvent(event);
@@ -138,7 +140,7 @@ void DragableTabGroup::slotStartDrag(int index)
         }
 
         // 没有合并到其他窗口，则创建一个新窗口
-        slotDragToNewWindow();
+        createDraggedNewWindow();
     });
     drag->exec();
 }
@@ -146,7 +148,7 @@ void DragableTabGroup::slotStartDrag(int index)
 /**
  * 自己的标签拖出到新窗口
  */
-DragableTabGroup* DragableTabGroup::slotDragToNewWindow()
+DragableTabGroup* DragableTabGroup::createDraggedNewWindow()
 {
     if (count() == 1) // 只有一个标签，直接移动窗口
     {
@@ -165,13 +167,17 @@ DragableTabGroup* DragableTabGroup::slotDragToNewWindow()
     emit signalNewTabWindowCreated(window);
     if (!_is_main && count() == 0) // 标签拖完了
         deleteLater();
+    window->setFocus();
+    QTimer::singleShot(0, window, [=]{
+        dragging_widget->setFocus();
+    });
     return window;
 }
 
 /**
  * 另一个窗口拖拽本窗口的tabbar，合并标签
  */
-bool DragableTabGroup::slotMergeLabel(QDropEvent *event)
+bool DragableTabGroup::mergeDroppedLabel(QDropEvent *event)
 {
     _drag_merged = true;
     int insert_index = count();
@@ -200,8 +206,7 @@ bool DragableTabGroup::slotMergeLabel(QDropEvent *event)
 
     // 移除旧的
     window->removeTab(window->currentIndex());
-    if (!window->_is_main && window->count() == 0) // 标签拖完了
-        window->deleteLater();
+    window->deleteIfEmpty(); // 标签拖完了
 
     // 插入新的
     if (insert_index >= count()) // 加到末尾
@@ -210,6 +215,10 @@ bool DragableTabGroup::slotMergeLabel(QDropEvent *event)
         insertTab(insert_index, widget, label);
 
     setCurrentIndex(insert_index);
-    this->raise();
+//    this->raise(); // 如果用frameless，raise会一直生效，导致界面会被挡住……
+    this->setFocus();
+    QTimer::singleShot(0, this, [=]{
+        widget->setFocus();
+    });
     return true;
 }

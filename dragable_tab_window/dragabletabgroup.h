@@ -8,6 +8,7 @@
 #include <QScreen>
 #include <QApplication>
 #include <QHBoxLayout>
+#include <QTimer>
 #include "dragabletabbar.h"
 
 #define DRAGABLE_TAB_WINDOW_MIME_KEY "DRAGABLE_TAB_WINDOW_MIME_KEY"
@@ -33,8 +34,8 @@ protected:
 
 public slots:
     void slotStartDrag(int index);
-    DragableTabGroup *slotDragToNewWindow();
-    bool slotMergeLabel(QDropEvent* event);
+    DragableTabGroup *createDraggedNewWindow();
+    bool mergeDroppedLabel(QDropEvent* event);
 
 signals:
     void signalNewTabWindowCreated(DragableTabGroup* window);

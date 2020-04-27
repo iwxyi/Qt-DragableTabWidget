@@ -9,6 +9,8 @@ DragableTabArea::DragableTabArea(QWidget *parent) : QScrollArea(parent)
 
 void DragableTabArea::initView()
 {
+    setAcceptDrops(true);
+
     main_layout = new QHBoxLayout(this);
     main_layout->setMargin(0);
     main_layout->setSpacing(0);
@@ -139,6 +141,27 @@ DragableTabGroup *DragableTabArea::splitGroupLayout(DragableTabGroup *base, QBox
 }
 
 /**
+ * 分割group的某一tab出来至新的layout
+ */
+DragableTabGroup *DragableTabArea::splitGroupTab(DragableTabGroup *group, int index, QBoxLayout::Direction direction, bool copy)
+{
+    auto new_group = splitGroupLayout(group, direction);
+    if (new_group == nullptr) // tab单独一个窗口，无法分割，便会是 nullptr
+        return nullptr;
+    if (index > -1)
+    {
+        // new_group->addTab 会自动引发 old_group->removeTab
+        new_group->addTab(group->currentWidget(), group->tabText(group->currentIndex()));
+    }
+    if (!copy && group->currentIndex() > -1)
+    {
+        // 其他add时，自己会自动remove
+        // group->removeTab(group->currentIndex());
+    }
+    return new_group;
+}
+
+/**
  * 在新窗口创建标签组
  * @param widget 如果不为空，则设置为第一个tab
  * @return 标签组（新窗口）指针
@@ -180,9 +203,26 @@ DragableTabGroup *DragableTabArea::createTabWindow(DragableTabGroup *group, int 
 
 }
 
+/**
+ * 获取所有标签组的数量
+ */
 int DragableTabArea::count()
 {
     return tab_groups.count();
+}
+
+/**
+ * 获取在主窗口中的标签组个数
+ */
+int DragableTabArea::countInMain()
+{
+    int c = 0;
+    foreach (auto group, tab_groups)
+    {
+        if (group->parentWidget() != nullptr)
+            c++;
+    }
+    return c;
 }
 
 /**
@@ -326,7 +366,11 @@ DragableTabGroup *DragableTabArea::focusGroup(DragableTabGroup *group)
 {
     if (group == nullptr)
         group = currentGroup();
-    group->raise();
+    current_group = group;
+    if (group->count())
+        group->currentWidget()->setFocus();
+    else
+        group->setFocus();
     return group;
 }
 
@@ -385,6 +429,35 @@ QList<QBoxLayout *> DragableTabArea::getGroupLayoutPath(DragableTabGroup *group)
     return path;
 }
 
+void DragableTabArea::dragEnterEvent(QDragEnterEvent *event)
+{
+    const QMimeData* mime = event->mimeData();
+    if (mime->hasFormat(DRAGABLE_TAB_WIDGET_MIME_KEY)) // Tab拖拽
+    {
+        event->accept();
+    }
+
+    return QScrollArea::dragEnterEvent(event);
+}
+
+void DragableTabArea::dropEvent(QDropEvent *event)
+{
+    const QMimeData* mime = event->mimeData();
+    if (mime->hasFormat(DRAGABLE_TAB_WIDGET_MIME_KEY)) // 整行拖拽
+    {
+        event->accept();
+        if (countInMain() == 0) // 没有标签组，拖动标签至当前页面
+        {
+            auto group = createTabGroup();
+            group->mergeDroppedLabel(event);
+        }
+    }
+    else
+    {
+        return QScrollArea::dropEvent(event);
+    }
+}
+
 /**
  * 创建新窗口事件
  * 所有子窗口的parent都是Area
@@ -398,6 +471,8 @@ void DragableTabArea::slotTabGroupCreated(DragableTabGroup *group)
 
     connect(group, &DragableTabGroup::destroyed, this, [=](QObject*) {
         tab_groups.removeOne(group);
+        if (group == current_group)
+            current_group = nullptr;
 
         // 如果它所在的layout是空的，移除
         QBoxLayout* layout = getGroupLayout(group);
@@ -410,22 +485,16 @@ void DragableTabArea::slotTabGroupCreated(DragableTabGroup *group)
     });
 
     connect(group, &DragableTabGroup::signalSplitCurrentTab, this, [=](QBoxLayout::Direction direction, bool copy) {
-        auto new_group = splitGroupLayout(group, direction);
-        if (new_group == nullptr) // tab单独一个窗口，无法分割
+        if (group->count() == 1) // 只有一个，分什么分
             return ;
-        if (group->currentIndex() > -1)
-        {
-            // new_group->addTab 会自动引发 old_group->removeTab
-            new_group->addTab(group->currentWidget(), group->tabText(group->currentIndex()));
-        }
-        if (!copy && group->currentIndex() > -1)
-        {
-            // 其他add时，自己会自动remove
-            // group->removeTab(group->currentIndex());
-        }
+        int index = group->currentIndex();
+        auto new_group = splitGroupTab(group, index, direction, copy);
 
         // 由于这是手动操作，先获取焦点吧
-        new_group->setFocus();
+        if (new_group)
+        {
+            focusGroup(new_group);
+        }
     });
 }
 
