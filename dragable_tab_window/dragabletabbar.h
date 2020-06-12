@@ -21,14 +21,15 @@ protected:
 
 private:
 
-public slots:
-
 signals:
     void signalStartDrag(int index);
     void signalEndDrag();
 
+public slots:
+    void slotDragMouseMoved(QPoint pos);
+
 private:
-    bool dragging;
+    bool dragging;    // 是否正在拖拽
     QPoint press_pos, release_pos;
 };
 

@@ -16,6 +16,7 @@ DragableTabGroup::DragableTabGroup(QWidget *parent)
     connect(tab_bar, SIGNAL(signalEndDrag()), this, SLOT(createDraggedNewWindow()));
 
     connect(qApp, &QApplication::focusChanged, this, [=](QWidget*old, QWidget* now){
+        Q_UNUSED(old)
         if (isFocusing())
             emit signalWidgetFocused(now);
     });
@@ -113,6 +114,7 @@ void DragableTabGroup::dropEvent(QDropEvent *event)
  */
 void DragableTabGroup::slotStartDrag(int index)
 {
+    drag_start_pos_delta = QCursor::pos() - this->pos();
     dragging_index = index;
     dragging_widget = this->widget(index);
     dragging_point_delta = QCursor::pos() - dragging_widget->mapToGlobal(dragging_widget->pos());
@@ -139,9 +141,19 @@ void DragableTabGroup::slotStartDrag(int index)
             return ;
         }
 
+        // 合并之后再执行 show，会导致崩溃……
+        this->show();
+
         // 没有合并到其他窗口，则创建一个新窗口
         createDraggedNewWindow();
     });
+
+    // 如果只有一个标签，则假装移动整个窗口
+    if (this->count() == 1)
+    {
+        this->hide();
+    }
+    // exec 操作会一直阻塞后面的代码，除非使用多线程或者信号槽
     drag->exec();
 }
 

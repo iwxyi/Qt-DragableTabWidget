@@ -4,6 +4,8 @@
 /**
   * 一整个编辑区域
   * 支持多个TabWidget各种模式平铺……
+  * TabArea 包含多个 TabGroup（标签组）
+  * TabGroup里有唯一的 TabBar
   */
 
 #include <QObject>

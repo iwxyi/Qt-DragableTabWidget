@@ -28,8 +28,7 @@ void DragableTabBar::mouseMoveEvent(QMouseEvent *e)
         if (index == -1)
             return ;
 
-        // 拖拽到外面来了
-        if (!tabRect(index).contains(e->pos()))
+        if (!tabRect(index).contains(e->pos())) // 拖拽到外面来了
         {
             emit signalStartDrag(index);
         }
