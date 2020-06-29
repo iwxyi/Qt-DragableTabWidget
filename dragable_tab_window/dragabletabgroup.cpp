@@ -150,11 +150,11 @@ void DragableTabGroup::slotStartDrag(int index)
         // 没有合并到其他窗口
         if (this->count() == 1)
         {
-            int titlebar_height = frameGeometry().height() - geometry().height();
+            int titlebar_height = style()->pixelMetric(QStyle::PM_TitleBarHeight);
             // 单个标签拖动，移动窗口
             // 合并之后再执行 show，会导致崩溃……
             this->move(QCursor::pos()-dragging_point_delta-QPoint(0, titlebar_height));
-            this->show();
+//            this->show();
         }
         else
         {
@@ -167,7 +167,8 @@ void DragableTabGroup::slotStartDrag(int index)
     if (this->count() == 1)
     {
         QTimer::singleShot(0, [=]{
-            this->hide();
+//            this->hide();
+            this->move(-30000, -30000); // 隐藏起来
         });
     }
     // exec 操作会一直阻塞后面的代码，除非使用多线程或者信号槽
@@ -186,10 +187,11 @@ DragableTabGroup* DragableTabGroup::createDraggedNewWindow()
         // return ;
     }
 
+    int titlebar_height = style()->pixelMetric(QStyle::PM_TitleBarHeight);
+
     DragableTabGroup* window = new DragableTabGroup(nullptr/*_is_main ? this : this->parentWidget()*/);
     window->resize(this->size());
-    int titlebar_height = frameGeometry().height() - geometry().height();
-    window->move(QCursor::pos()-dragging_point_delta-QPoint(0,titlebar_height+tabBar()->height()));
+    window->move(QCursor::pos()-dragging_point_delta-QPoint(0,titlebar_height));
     window->show();
     QString label = tab_bar->tabText(dragging_index);
     removeTab(dragging_index);

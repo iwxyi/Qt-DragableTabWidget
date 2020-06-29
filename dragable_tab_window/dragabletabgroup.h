@@ -9,6 +9,8 @@
 #include <QApplication>
 #include <QHBoxLayout>
 #include <QTimer>
+#include <QDesktopWidget>
+#include <QStyle>
 #include "dragabletabbar.h"
 
 #define DRAGABLE_TAB_WINDOW_MIME_KEY "DRAGABLE_TAB_WINDOW_MIME_KEY"
