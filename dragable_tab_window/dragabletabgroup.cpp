@@ -153,7 +153,7 @@ void DragableTabGroup::slotStartDrag(int index)
             int titlebar_height = style()->pixelMetric(QStyle::PM_TitleBarHeight);
             // 单个标签拖动，移动窗口
             // 合并之后再执行 show，会导致崩溃……
-            this->move(QCursor::pos()-dragging_point_delta-QPoint(0, titlebar_height));
+            this->move(QCursor::pos()-dragging_point_delta-QPoint(WIN_FRAME_LEFE_OFFSET, titlebar_height));
 //            this->show();
         }
         else
@@ -191,7 +191,7 @@ DragableTabGroup* DragableTabGroup::createDraggedNewWindow()
 
     DragableTabGroup* window = new DragableTabGroup(nullptr/*_is_main ? this : this->parentWidget()*/);
     window->resize(this->size());
-    window->move(QCursor::pos()-dragging_point_delta-QPoint(0,titlebar_height));
+    window->move(QCursor::pos()-dragging_point_delta-QPoint(WIN_FRAME_LEFE_OFFSET,titlebar_height));
     window->show();
     QString label = tab_bar->tabText(dragging_index);
     removeTab(dragging_index);

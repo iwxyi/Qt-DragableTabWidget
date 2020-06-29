@@ -17,6 +17,8 @@
 #define DRAGABLE_TAB_WIDGET_MIME_KEY "DRAGABLE_TAB_WIGET_MIME_KEY"
 #define DRAGABLE_TAB_LABEL_MIME_KEY "DRAGABLE_TAB_LABEL_MIME_KEY"
 
+#define WIN_FRAME_LEFE_OFFSET 8 // 移动时左边需要偏差的像素；可能是左边的阴影？
+
 class DragableTabGroup : public QTabWidget
 {
     Q_OBJECT
