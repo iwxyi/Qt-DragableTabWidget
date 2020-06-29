@@ -21,14 +21,14 @@ void DragableTabBar::mouseMoveEvent(QMouseEvent *e)
 {
     QTabBar::mouseMoveEvent(e);
 
-    // 高度超过
-    if (dragging && (e->buttons() & Qt::LeftButton) && !contentsRect().contains(e->pos()))
+    // 高度超过标签栏高度 或 标签数量=1 时，开启拖拽
+    if (dragging && (e->buttons() & Qt::LeftButton) && (count() == 1 || !contentsRect().contains(e->pos())))
     {
         int index = this->currentIndex();
         if (index == -1)
             return ;
 
-        if (!tabRect(index).contains(e->pos())) // 拖拽到外面来了
+        if (count() == 1 || !tabRect(index).contains(e->pos())) // 拖拽到外面来了
         {
             emit signalStartDrag(index);
         }

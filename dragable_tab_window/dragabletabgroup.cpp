@@ -12,6 +12,12 @@ DragableTabGroup::DragableTabGroup(QWidget *parent)
 //    setTabsClosable(true);
 //    tab_bar->setAutoHide(true);
 
+    // 无窗口，看起来更像浏览器的
+    if (frameless)
+    {
+        setWindowFlag(Qt::FramelessWindowHint, true);
+    }
+
     connect(tab_bar, SIGNAL(signalStartDrag(int)), this, SLOT(slotStartDrag(int)));
     connect(tab_bar, SIGNAL(signalEndDrag()), this, SLOT(createDraggedNewWindow()));
 
@@ -114,15 +120,15 @@ void DragableTabGroup::dropEvent(QDropEvent *event)
  */
 void DragableTabGroup::slotStartDrag(int index)
 {
-    drag_start_pos_delta = QCursor::pos() - this->pos();
     dragging_index = index;
     dragging_widget = this->widget(index);
-    dragging_point_delta = QCursor::pos() - dragging_widget->mapToGlobal(dragging_widget->pos());
+    dragging_point_delta = QCursor::pos() - (parent() == nullptr ? tabBar()->mapToGlobal(tabBar()->pos()) : mapToGlobal(this->pos()));
     _drag_merged = false;
 
     QPixmap pixmap(this->size());
     pixmap.fill(Qt::transparent);
-    dragging_widget->render(&pixmap, dragging_widget->mapToGlobal(pos()) - this->mapToGlobal(pos()));
+//    dragging_widget->render(&pixmap, dragging_widget->mapToGlobal(pos()) - this->mapToGlobal(pos()));
+    this->render(&pixmap, this->mapToGlobal(pos()) - this->mapToGlobal(pos()));
 
     QMimeData* mime = new QMimeData;
     mime->setData(DRAGABLE_TAB_WINDOW_MIME_KEY, QString::number(reinterpret_cast<int>(this)).toUtf8());
@@ -141,17 +147,28 @@ void DragableTabGroup::slotStartDrag(int index)
             return ;
         }
 
-        // 合并之后再执行 show，会导致崩溃……
-        this->show();
-
-        // 没有合并到其他窗口，则创建一个新窗口
-        createDraggedNewWindow();
+        // 没有合并到其他窗口
+        if (this->count() == 1)
+        {
+            int titlebar_height = frameGeometry().height() - geometry().height();
+            // 单个标签拖动，移动窗口
+            // 合并之后再执行 show，会导致崩溃……
+            this->move(QCursor::pos()-dragging_point_delta-QPoint(0, titlebar_height));
+            this->show();
+        }
+        else
+        {
+            // 多个标签拖出，创建新窗口
+            createDraggedNewWindow();
+        }
     });
 
     // 如果只有一个标签，则假装移动整个窗口
     if (this->count() == 1)
     {
-        this->hide();
+        QTimer::singleShot(0, [=]{
+            this->hide();
+        });
     }
     // exec 操作会一直阻塞后面的代码，除非使用多线程或者信号槽
     drag->exec();
@@ -171,7 +188,8 @@ DragableTabGroup* DragableTabGroup::createDraggedNewWindow()
 
     DragableTabGroup* window = new DragableTabGroup(nullptr/*_is_main ? this : this->parentWidget()*/);
     window->resize(this->size());
-    window->move(QCursor::pos()-dragging_point_delta-QPoint(0,tab_bar->height()));
+    int titlebar_height = frameGeometry().height() - geometry().height();
+    window->move(QCursor::pos()-dragging_point_delta-QPoint(0,titlebar_height+tabBar()->height()));
     window->show();
     QString label = tab_bar->tabText(dragging_index);
     removeTab(dragging_index);

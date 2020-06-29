@@ -47,10 +47,10 @@ protected:
     int dragging_index;
     QWidget* dragging_widget;
     QPoint dragging_point_delta; // 拖拽的 鼠标-子窗口左上角
-    QPoint drag_start_pos_delta;
 
     bool _is_main; // 是不是主窗口
     static bool _drag_merged;
+    bool frameless = false; // 使用无窗口边框
 };
 
 #endif // DRAGABLETABGROUP_H

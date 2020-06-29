@@ -26,7 +26,6 @@ signals:
     void signalEndDrag();
 
 public slots:
-    void slotDragMouseMoved(QPoint pos);
 
 private:
     bool dragging;    // 是否正在拖拽
