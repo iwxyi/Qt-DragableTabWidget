@@ -54,3 +54,9 @@ void DragableTabBar::focusOutEvent(QFocusEvent *e)
 
     return QTabBar::focusOutEvent(e);
 }
+
+void DragableTabBar::contextMenuEvent(QContextMenuEvent *event)
+{
+    int index = tabAt(event->pos());
+    emit signalTabMenu(event->pos(), index);
+}
